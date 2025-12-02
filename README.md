@@ -143,6 +143,63 @@ Conectar a PC con adaptador USB-Serial (3.3V o nivel TTL):
 3. Usar `uart_tx_ready()` y `uart_rx_ready()` para operaciones no bloqueantes
 4. La velocidad 115200 está fija en hardware FPGA
 
+## Compilación
+
+### Compilar la librería
+
+```bash
+# Compilar uart.c a objeto
+cl65 -t none -O --cpu 65c02 -c uart.c -o uart.o
+
+# O usando ca65 desde ensamblador pre-compilado
+ca65 --cpu 65c02 uart.s -o uart.o
+```
+
+### Integración en Makefile
+
+```makefile
+# Directorios
+LIBS_DIR = libs
+UART_DIR = $(LIBS_DIR)/uart
+
+# Archivo objeto
+UART_OBJ = $(UART_DIR)/uart.o
+
+# Flags del compilador
+CC = cl65
+CFLAGS = -t none -O --cpu 65c02
+
+# Regla para compilar uart
+$(UART_DIR)/uart.o: $(UART_DIR)/uart.c $(UART_DIR)/uart.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Linkear con tu programa
+mi_programa.bin: main.o $(UART_OBJ) vectors.o
+	ld65 -C config/fpga.cfg -o $@ $^
+```
+
+### Estructura de proyecto recomendada
+
+```
+mi_proyecto/
+├── libs/
+│   └── uart/
+│       ├── uart.c
+│       └── uart.h
+├── src/
+│   └── main.c
+├── config/
+│   └── fpga.cfg
+└── makefile
+```
+
+### Include en tu código
+
+```c
+// Desde src/main.c
+#include "../libs/uart/uart.h"
+```
+
 ## Compatibilidad
 
 - ✅ cc65 compiler
