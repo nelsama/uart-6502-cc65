@@ -2,12 +2,12 @@
 
 ## Descripción
 
-Librería para comunicación serial UART compatible con cc65. Implementada para el controlador UART en FPGA con velocidad fija de **115200 baud**.
+Librería para comunicación serial UART compatible con cc65. Implementada en **ensamblador optimizado** para el controlador UART en FPGA con velocidad fija de **115200 baud**.
 
 ## Archivos
 
-- `uart.h` - Definiciones y prototipos
-- `uart.c` - Implementación (polling)
+- `uart.h` - Definiciones y prototipos (header C para compatibilidad)
+- `uart.s` - Implementación optimizada en ensamblador (105 bytes)
 
 ## Configuración de Hardware
 
@@ -41,10 +41,12 @@ Librería para comunicación serial UART compatible con cc65. Implementada para 
 
 ## Características
 
+- ✅ **Ensamblador optimizado** - Solo 105 bytes de código
 - ✅ Modo polling (sin interrupciones)
 - ✅ Velocidad: 115200 baud (fija en FPGA)
 - ✅ 8 bits de datos, sin paridad, 1 bit de stop (8N1)
 - ✅ Funciones bloqueantes y no bloqueantes
+- ✅ Compatible con código C (usa el header uart.h)
 
 ## Funciones
 
@@ -148,11 +150,8 @@ Conectar a PC con adaptador USB-Serial (3.3V o nivel TTL):
 ### Compilar la librería
 
 ```bash
-# Compilar uart.c a objeto
-cl65 -t none -O --cpu 65c02 -c uart.c -o uart.o
-
-# O usando ca65 desde ensamblador pre-compilado
-ca65 --cpu 65c02 uart.s -o uart.o
+# Compilar uart.s a objeto
+ca65 -t none -o uart.o uart.s
 ```
 
 ### Integración en Makefile
@@ -163,15 +162,11 @@ LIBS_DIR = libs
 UART_DIR = $(LIBS_DIR)/uart
 
 # Archivo objeto
-UART_OBJ = $(UART_DIR)/uart.o
+UART_OBJ = build/uart.o
 
-# Flags del compilador
-CC = cl65
-CFLAGS = -t none -O --cpu 65c02
-
-# Regla para compilar uart
-$(UART_DIR)/uart.o: $(UART_DIR)/uart.c $(UART_DIR)/uart.h
-	$(CC) $(CFLAGS) -c $< -o $@
+# Regla para compilar uart (ensamblador)
+$(UART_OBJ): $(UART_DIR)/uart.s
+	ca65 -t none -o $@ $<
 
 # Linkear con tu programa
 mi_programa.bin: main.o $(UART_OBJ) vectors.o
@@ -184,7 +179,7 @@ mi_programa.bin: main.o $(UART_OBJ) vectors.o
 mi_proyecto/
 ├── libs/
 │   └── uart/
-│       ├── uart.c
+│       ├── uart.s
 │       └── uart.h
 ├── src/
 │   └── main.c
@@ -202,7 +197,20 @@ mi_proyecto/
 
 ## Compatibilidad
 
-- ✅ cc65 compiler
-- ✅ C89 estándar
+- ✅ cc65 compiler (ca65 assembler)
+- ✅ API C89 estándar (via uart.h)
 - ✅ 6502/65C02
-- ✅ FPGA Tang Nano
+- ✅ FPGA Tang Nano 9K
+
+## Tamaño del código
+
+| Función | Bytes |
+|---------|-------|
+| `uart_init` | 11 |
+| `uart_putc` | 13 |
+| `uart_getc` | 13 |
+| `uart_rx_ready` | 12 |
+| `uart_tx_ready` | 12 |
+| `uart_puts` | 33 |
+| `uart_clear_errors` | 11 |
+| **Total** | **105** |
