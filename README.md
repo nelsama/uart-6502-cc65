@@ -214,3 +214,9 @@ mi_proyecto/
 | `uart_puts` | 33 |
 | `uart_clear_errors` | 11 |
 | **Total** | **105** |
+
+## Licencia
+
+Este proyecto está licenciado bajo los términos de la Licencia MIT. Para más información, consulta el archivo [LICENSE](./LICENSE).
+
+Más detalles sobre la Licencia MIT: https://opensource.org/licenses/MIT
