@@ -4,7 +4,8 @@
  * Mapa de memoria UART:
  *   $C020 - DATA (RX_DATA lectura / TX_DATA escritura)
  *   $C021 - STATUS (lectura) / CONTROL (escritura)
- *   $C022 - CONTROL_RD (lectura de flags de control)
+ *   $C022 - BAUD_LO (divisor de baudrate byte bajo)
+ *   $C023 - BAUD_HI (divisor de baudrate byte alto)
  */
 
 #ifndef UART_H
@@ -18,7 +19,8 @@
 #define UART_DATA       (*(volatile uint8_t *)(UART_BASE + 0x00))
 #define UART_STATUS     (*(volatile uint8_t *)(UART_BASE + 0x01))
 #define UART_CONTROL    (*(volatile uint8_t *)(UART_BASE + 0x01))
-#define UART_CONTROL_RD (*(volatile uint8_t *)(UART_BASE + 0x02))
+#define UART_BAUD_LO    (*(volatile uint8_t *)(UART_BASE + 0x02))
+#define UART_BAUD_HI    (*(volatile uint8_t *)(UART_BASE + 0x03))
 
 /* Bits del registro STATUS (lectura $C021) */
 #define UART_TX_READY   0x01    /* Bit 0: Transmisor listo */
@@ -32,6 +34,13 @@
 #define UART_RX_IRQ_EN  0x02    /* Bit 1: Habilitar IRQ RX válido */
 #define UART_RESET_FLAGS 0x80   /* Bit 7: Limpiar flags de error */
 
+/* Divisores de baudrate para CLK 6.75 MHz */
+#define UART_BAUD_9600      703     /* $02BF */
+#define UART_BAUD_19200     351     /* $015F */
+#define UART_BAUD_38400     175     /* $00AF */
+#define UART_BAUD_57600     117     /* $0075 */
+#define UART_BAUD_115200    58      /* $003A - Por defecto */
+
 /* Funciones básicas */
 void uart_init(void);
 void uart_putc(char c);
@@ -40,5 +49,8 @@ uint8_t uart_rx_ready(void);
 uint8_t uart_tx_ready(void);
 void uart_puts(const char *str);
 void uart_clear_errors(void);
+
+/* Configuración de baudrate */
+void uart_set_baudrate(uint16_t divisor);
 
 #endif /* UART_H */

@@ -5,6 +5,8 @@
 ; Mapa de memoria UART:
 ;   $C020 - DATA (RX_DATA lectura / TX_DATA escritura)
 ;   $C021 - STATUS (lectura) / CONTROL (escritura)
+;   $C022 - BAUD_LO (divisor de baudrate byte bajo)
+;   $C023 - BAUD_HI (divisor de baudrate byte alto)
 ;
 
     .setcpu     "6502"
@@ -19,6 +21,7 @@
     .export     _uart_tx_ready
     .export     _uart_puts
     .export     _uart_clear_errors
+    .export     _uart_set_baudrate
 
 ; ---------------------------------------------------------------
 ; Constantes de hardware
@@ -26,6 +29,8 @@
 UART_DATA       = $C020
 UART_STATUS     = $C021
 UART_CONTROL    = $C021
+UART_BAUD_LO    = $C022
+UART_BAUD_HI    = $C023
 
 UART_TX_READY   = $01       ; Bit 0: Transmisor listo
 UART_RX_VALID   = $02       ; Bit 1: Dato recibido disponible
@@ -145,5 +150,16 @@ UART_RESET_FLAGS = $80      ; Bit 7: Limpiar flags de error
     sta     UART_CONTROL
     lda     #$00
     sta     UART_CONTROL
+    rts
+.endproc
+
+; ---------------------------------------------------------------
+; void uart_set_baudrate(uint16_t divisor)
+; Configura el divisor de baudrate
+; Entrada: A:X = divisor (low:high)
+; ---------------------------------------------------------------
+.proc _uart_set_baudrate
+    sta     UART_BAUD_LO    ; Guardar byte bajo del divisor
+    stx     UART_BAUD_HI    ; Guardar byte alto del divisor
     rts
 .endproc
